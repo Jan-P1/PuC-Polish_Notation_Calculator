@@ -15,7 +15,7 @@ sealed class Token {
 
 
     // Literal
-    data class DOUBLE_LIT(val double: Double) : Token()
+    data class DOUBLE_LIT(val value: Double) : Token()
 
 
     // Operator
@@ -32,7 +32,6 @@ sealed class Token {
 
 
     // Control
-    object WHITESPACE : Token()
     object EOF : Token()
 }
 
@@ -60,7 +59,7 @@ class Lexer(input: String) {
 
     fun next(): Token {
         lh?.let { it -> lh = null; return it }
-        if (iter.peek()?.isWhitespace() == true || iter.peek()?.equals(null) == true)
+        if (iter.peek()?.isWhitespace() == true)
             chompWhitespace()
 
         return when (val c = iter.next()) {
@@ -122,7 +121,7 @@ class Lexer(input: String) {
     private fun lexText(first: Char): Token {
         var res = first.toString()
         while (true) {
-            if(iter.peek()?.isWhitespace() == true){
+            if(iter.peek()?.isWhitespace() == true || iter.peek()?.equals(null) == true){
                 break
             }
             res += iter.next()
@@ -151,28 +150,27 @@ class Lexer(input: String) {
 class CalcParser(private val lexer: Lexer) {
 
     fun quickParse(): Double {
-        println("starting new parse cycle")
         val token = lexer.next()
+        println("$token")
         if(token is Token.DOUBLE_LIT) {
-            println("Checking if token is number")
             if (lexer.lookahead() is Token.EOF) {
-                println("only one number")
-                return token.double
+                return token.value
             } else throw Exception("Invalid Syntax")
-        }
+        } else if(lexer.lookahead() is Token.EOF)
+            throw java.lang.Exception("WHERE'S THE GOD DAMN NUMBERS?!")
 
         var left: Double
         var right: Double? = null
 
-        println("break 1 ")
+
         if (lexer.lookahead() !is Token.DOUBLE_LIT) {
-            println("break 2 ")
+
             left = quickParse()
         } else {
-            println("break 3 ")
-            left = (lexer.next() as Token.DOUBLE_LIT).double
+
+            left = (lexer.next() as Token.DOUBLE_LIT).value
         }
-        println("break 4 ")
+
         if (token is Token.ABSOLUTE)
             return parseExpression(token, left, right)
         if (token is Token.CHECKSUM)
@@ -180,13 +178,17 @@ class CalcParser(private val lexer: Lexer) {
         if (token is Token.FACTORIAL)
             return parseExpression(token, left, right)
 
-        println("break 5 ")
+
         right = if (lexer.lookahead() !is Token.DOUBLE_LIT)
             quickParse()
         else {
-            (lexer.next() as Token.DOUBLE_LIT).double
+            (lexer.next() as Token.DOUBLE_LIT).value
         }
-        println("Return")
+
+        if(token !is Token.ABSOLUTE && token !is Token.FACTORIAL && token !is Token.CHECKSUM)
+            if(lexer.lookahead() != Token.EOF)
+                throw Exception("Invalid syntax")
+
         return parseExpression(token, left, right)
     }
 

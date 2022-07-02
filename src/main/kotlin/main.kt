@@ -118,21 +118,21 @@ fun interp(expr: Expression): Double {
 
 fun main(args: Array<String>) {
 
-    val addition = "5"
+    while (true) {
+        println("Taschenrechner nach polnischer Notation")
+        println()
+        print("Eingabe: ")
+        var addition = readln()
+        addition += " "
+        var result = 0.0
+        try{
+            result = CalcParser(Lexer(addition)).quickParse()
+            if(result % 1.0 != 0.0){
+                println("${addition} = ${result}")
+            } else println("${addition}= ${result.toInt()}")
+        } catch (e: Exception){
+            println("invalid syntax, try again")
+        }
 
-        /*Expression.Root(
-        Expression.Division(
-        Expression.Addition(
-            Expression.Number(2.0),
-            Expression.Multiplication(
-                Expression.Number(4.0),
-                Expression.Number(4.0)
-            )
-
-        ),
-            Expression.Number(3.0)
-        ),
-        Expression.Number(2.0)
-    )*/
-    println("${addition} = ${CalcParser(Lexer(addition)).quickParse()}")
+    }
 }
