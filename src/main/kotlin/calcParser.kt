@@ -68,12 +68,15 @@ class Lexer(input: String) {
             '/' -> Token.DIVIDES
             '*' -> Token.MULTIPLY
             '^' -> Token.POWER
-            '-' -> Token.MINUS
+            '-' -> if (iter.peek()?.isWhitespace() == true) {
+                Token.MINUS
+            } else if (iter.peek()?.isDigit() == true) {
+                lexDouble(c)
+            } else throw Exception("Invalid Syntax")
             '=' -> Token.EQUALS
             '!' -> Token.FACTORIAL
             '|' -> if (iter.peek() == '|') {
                 iter.next()
-                chompWhitespace()
                 Token.ABSOLUTE
             } else {
                 throw Exception("Unknown Operator |$c")
@@ -157,18 +160,16 @@ class CalcParser(private val lexer: Lexer) {
                 return token.value
             } else throw Exception("Invalid Syntax")
         } else if(lexer.lookahead() is Token.EOF)
-            throw java.lang.Exception("WHERE'S THE GOD DAMN NUMBERS?!")
+            throw Exception("WHERE'S THE GOD DAMN NUMBERS?!")
 
         var left: Double
         var right: Double? = null
 
 
-        if (lexer.lookahead() !is Token.DOUBLE_LIT) {
-
-            left = quickParse()
+        left = if (lexer.lookahead() !is Token.DOUBLE_LIT) {
+            quickParse()
         } else {
-
-            left = (lexer.next() as Token.DOUBLE_LIT).value
+            (lexer.next() as Token.DOUBLE_LIT).value
         }
 
         if (token is Token.ABSOLUTE)
