@@ -88,10 +88,15 @@ fun interpSimple(expression: SimplerExpression): Double {
         }
         is SimplerExpression.Checksum -> {
             val numString = interpSimple(expression.value).toString()
+            var vorzeichen = interpSimple(expression.value) < 0
             var res = 0.0
-            for (c in numString){
+            for (c in numString) {
+                if(c == '.' || c == '-')
+                    continue
                 res += c.toString().toDouble()
             }
+            if(vorzeichen)
+                res *= -1
             return res
         }
         is SimplerExpression.Power ->

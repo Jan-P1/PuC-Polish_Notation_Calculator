@@ -62,7 +62,7 @@ class Lexer(input: String) {
         if (iter.peek()?.isWhitespace() == true)
             chompWhitespace()
 
-        return when (val c = iter.next()) {
+        val t = when (val c = iter.next()) {
             null -> Token.EOF
             '+' -> Token.PLUS
             '/' -> Token.DIVIDES
@@ -91,6 +91,8 @@ class Lexer(input: String) {
                 else -> throw Exception("Unexpected $c")
             }
         }
+        println(t)
+        return t
     }
 
 
@@ -100,7 +102,7 @@ class Lexer(input: String) {
         var hasPrefix = false
         while (true) {
 
-            if(iter.peek()?.isWhitespace() == true){
+            if(iter.peek()?.isWhitespace() == true || iter.peek() == null){
                 return Token.DOUBLE_LIT(res.toDouble())}
 
             if (iter.peek()?.isLetter() == true)
@@ -152,7 +154,8 @@ class Lexer(input: String) {
 
 class CalcParser(private val lexer: Lexer) {
 
-    fun quickParse(): Double {
+    fun quickParse(opCount: Int = 0): Double {
+        var opC = opCount
         val token = lexer.next()
         println("$token")
         if(token is Token.DOUBLE_LIT) {
@@ -162,12 +165,14 @@ class CalcParser(private val lexer: Lexer) {
         } else if(lexer.lookahead() is Token.EOF)
             throw Exception("WHERE'S THE GOD DAMN NUMBERS?!")
 
+        ++opC
+
         var left: Double
         var right: Double? = null
 
 
         left = if (lexer.lookahead() !is Token.DOUBLE_LIT) {
-            quickParse()
+            quickParse(opC)
         } else {
             (lexer.next() as Token.DOUBLE_LIT).value
         }
@@ -181,14 +186,15 @@ class CalcParser(private val lexer: Lexer) {
 
 
         right = if (lexer.lookahead() !is Token.DOUBLE_LIT)
-            quickParse()
+            quickParse(opC)
         else {
             (lexer.next() as Token.DOUBLE_LIT).value
         }
 
-        if(token !is Token.ABSOLUTE && token !is Token.FACTORIAL && token !is Token.CHECKSUM)
-            if(lexer.lookahead() != Token.EOF)
-                throw Exception("Invalid syntax")
+        if(opC == 1)
+            if(token !is Token.ABSOLUTE && token !is Token.FACTORIAL && token !is Token.CHECKSUM)
+                if(lexer.lookahead() != Token.EOF)
+                    throw Exception("Invalid syntax")
 
         return parseExpression(token, left, right)
     }

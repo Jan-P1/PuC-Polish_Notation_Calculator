@@ -7,18 +7,13 @@ fun main(args: Array<String>) {
         println()
         println()
         print("Eingabe: ")
-        var addition = readln()
-        addition += " "
-        var result = 0.0
+        val input = readln()
+        println(input)
 
-        try {
-            result = CalcParser(Lexer(addition)).quickParse()
-            if (result % 1.0 != 0.0) {
-                println("${addition} = ${result}")
-            } else println("${addition}= ${result.toInt()}")
-        } catch (e: Exception) {
-            println("Oops, da lief was schief :)")
-        }
+        val result = CalcParser(Lexer(input)).quickParse()
+        if (result % 1.0 == 0.0) {
+            println("${input} = ${result.toInt()}")
+        } else println("${input} = ${result}")
 
     }
 }
